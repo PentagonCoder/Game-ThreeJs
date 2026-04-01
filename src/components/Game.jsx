@@ -16,7 +16,7 @@ function Game({ username }) {
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
 
-      <Canvas camera={{ position: [10, 10, 10], fov: 10 }}>
+      <Canvas camera={{ position: [10, 10, 10], fov: 40 }}>
 
         {/* Lights */}
         <ambientLight intensity={0.8} />
