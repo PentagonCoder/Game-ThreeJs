@@ -6,6 +6,7 @@ function useWebSocket(username) {
   // [ { username: "John", state: { x, z } }, { username: "Jane", state: { x, z } } ]
   const [otherPlayers, setOtherPlayers] = useState([])
 
+  // useRef to store the WebSocket instance, not in state because we don't want re-renders when it changes
   const wsRef = useRef(null)
 // https://game-server-websocket.onrender.com
   useEffect(() => {
@@ -57,7 +58,12 @@ function useWebSocket(username) {
 
     // Only send if connection is open (readyState 1 = OPEN)
     if (ws && ws.readyState === 1) {
-      ws.send(JSON.stringify({ x, z }))
+      ws.send(JSON.stringify(
+        { 
+          x : x, 
+          z : z
+        }
+      ))
     }
   }
 

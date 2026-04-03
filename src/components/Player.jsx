@@ -38,7 +38,7 @@ function Player({ sendState }) {
   })
 
   return (
-    <mesh ref={meshRef} name="player" position={[0, 0.5, 0]}>
+    <mesh ref={meshRef} name="player" position={[0, 0, 0]}>
       <boxGeometry args={[1, 1, 1]} />
       {/* blue cube = me */}
       <meshStandardMaterial color="skyblue" />
