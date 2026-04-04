@@ -9,8 +9,8 @@ function OtherPlayer({ username, state }) {
   // move the whole group (cube + text) every frame based on server state
   useFrame(() => {
     if (!groupRef.current) return
-    groupRef.current.position.x = state.x
-    groupRef.current.position.z = state.z
+    groupRef.current.position.x += (state.x - groupRef.current.position.x) * 0.2
+    groupRef.current.position.z += (state.z - groupRef.current.position.z) * 0.2
   })
 
   return (
@@ -20,7 +20,7 @@ function OtherPlayer({ username, state }) {
       {/* orange cube = other player */}
       <mesh>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="orange" />
+        <meshStandardMaterial color={state.color || "orange"} />
       </mesh>
 
       {/* username above — position [0,1.2,0] is LOCAL to the group */}

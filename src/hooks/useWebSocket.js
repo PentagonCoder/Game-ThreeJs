@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react"
+// list of colors — one will be picked randomly when you connect
+const COLORS = ["orange", "hotpink", "limegreen", "gold", "mediumpurple", "tomato", "cyan"]
 
 function useWebSocket(username) {
 
@@ -8,6 +10,10 @@ function useWebSocket(username) {
 
   // useRef to store the WebSocket instance, not in state because we don't want re-renders when it changes
   const wsRef = useRef(null)
+
+  const mycolor = useRef(COLORS[Math.floor(Math.random() * COLORS.length)])
+  const myColor = mycolor.current
+
 // https://game-server-websocket.onrender.com
   useEffect(() => {
     // 1. Connect to server with username in URL
@@ -61,7 +67,8 @@ function useWebSocket(username) {
       ws.send(JSON.stringify(
         { 
           x : x, 
-          z : z
+          z : z,
+          color: myColor.current
         }
       ))
     }

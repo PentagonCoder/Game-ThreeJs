@@ -8,6 +8,9 @@ function Player({ sendState }) {
   // track which keys are pressed
   const keys = useRef({})
 
+  // store last sent position so we only send when something changed
+  const lastSent = useRef({ x: 0, z: 0 })
+
   useEffect(() => {
     const onKeyDown = (e) => { keys.current[e.key] = true }
     const onKeyUp   = (e) => { keys.current[e.key] = false }
@@ -33,8 +36,15 @@ function Player({ sendState }) {
     if (keys.current["a"] || keys.current["ArrowLeft"])  mesh.position.x -= speed * delta
     if (keys.current["d"] || keys.current["ArrowRight"]) mesh.position.x += speed * delta
 
-    // send our position to server every frame
-    sendState(mesh.position.x, mesh.position.z)
+    const x = parseFloat(mesh.position.x.toFixed(2))
+    const z = parseFloat(mesh.position.z.toFixed(2))
+    
+    // only send if position changed
+    if (x !== lastSent.current.x || z !== lastSent.current.z) {
+      sendState(x, z)
+      lastSent.current = { x, z }
+    }
+
   })
 
   return (
