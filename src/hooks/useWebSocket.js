@@ -17,7 +17,7 @@ function useWebSocket(username) {
 // https://game-server-websocket.onrender.com
   useEffect(() => {
     // 1. Connect to server with username in URL
-    const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
+    const ws = new WebSocket(`ws://localhost:8080?username=${username}`)
     wsRef.current = ws
 
     // 2. When server sends data (all players' positions)

@@ -9,8 +9,8 @@ function OtherPlayer({ username, state }) {
   // move the whole group (cube + text) every frame based on server state
   useFrame(() => {
     if (!groupRef.current) return
-    groupRef.current.position.x += (state.x - groupRef.current.position.x) * 0.2
-    groupRef.current.position.z += (state.z - groupRef.current.position.z) * 0.2
+    groupRef.current.position.x += (state.x - groupRef.current.position.x) * 0.05
+    groupRef.current.position.z += (state.z - groupRef.current.position.z) * 0.05
   })
 
   return (
