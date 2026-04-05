@@ -13,11 +13,11 @@ function useWebSocket(username) {
 
   const mycolor = useRef(COLORS[Math.floor(Math.random() * COLORS.length)])
   const myColor = mycolor.current
-
+//localhost:8080
 // https://game-server-websocket.onrender.com
   useEffect(() => {
     // 1. Connect to server with username in URL
-    const ws = new WebSocket(`ws://localhost:8080?username=${username}`)
+    const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
     wsRef.current = ws
 
     // 2. When server sends data (all players' positions)
