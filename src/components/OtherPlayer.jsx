@@ -11,6 +11,7 @@ function OtherPlayer({ username, state }) {
     if (!groupRef.current) return
     groupRef.current.position.x += (state.x - groupRef.current.position.x) * 0.05
     groupRef.current.position.z += (state.z - groupRef.current.position.z) * 0.05
+    groupRef.current.rotation.y += (state.rotation - groupRef.current.rotation.y) * 0.05
   })
 
   return (

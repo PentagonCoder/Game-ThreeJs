@@ -59,7 +59,7 @@ function useWebSocket(username) {
 
   // This function is called by Player.jsx every frame
   // It sends our current position to the server
-  function sendState(x, z) {
+  function sendState(x, z ,rotation) {
     const ws = wsRef.current
 
     // Only send if connection is open (readyState 1 = OPEN)
@@ -68,6 +68,7 @@ function useWebSocket(username) {
         { 
           x : x, 
           z : z,
+          rotation,
           color: myColor.current
         }
       ))
