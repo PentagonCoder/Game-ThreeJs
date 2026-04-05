@@ -47,20 +47,28 @@ function FollowCamera({ playerRef }) {
       // camera goes BEHIND the player
       // behind = opposite of forward
       // so we subtract forward from player position
-      const distance = 3    // how far behind
-      const height   = 2    // how high above
+      const distance = 2    // how far behind
+      const height   = 1    // how high above
   
-      camera.position.x = player.position.x - forward.x * distance
-      camera.position.y = player.position.y + height
-      camera.position.z = player.position.z - forward.z * distance
-  
+      // camera.position.x = player.position.x - forward.x * distance
+      // camera.position.y = player.position.y + height
+      // camera.position.z = player.position.z - forward.z * distance
       // camera always looks AT the player head
-      const lookTarget = new THREE.Vector3(
-        player.position.x,
-        player.position.y + 1,
-        player.position.z
-      )
-      camera.lookAt(lookTarget)
+      // const lookTarget = new THREE.Vector3(
+      //   player.position.x,
+      //   player.position.y + 1,
+      //   player.position.z
+      // )
+      // camera.lookAt(lookTarget)
+
+      // ── smooth follow with lerp ─────────────────────────────
+      const targetX = player.position.x - forward.x * distance
+      const targetY = player.position.y + height
+      const targetZ = player.position.z - forward.z * distance
+      // lerp camera position towards target — smooth follow, not instant snap
+      camera.position.x += (targetX - camera.position.x) * 0.1
+      camera.position.y += (targetY - camera.position.y) * 0.1
+      camera.position.z += (targetZ - camera.position.z) * 0.1
   })
 
  
