@@ -6,7 +6,8 @@ import * as THREE from "three"
 import useWebSocket from "../hooks/useWebSocket"
 import Player from "./Player"
 import OtherPlayer from "./OtherPlayer"
-import Floor from "./Floor"
+import {Model} from "./GHOST-compressed"
+// import Floor from "./Floor"
 
 // ─────────────────────────────────────────────
 // Camera that sticks to the player
@@ -47,19 +48,8 @@ function FollowCamera({ playerRef }) {
       // camera goes BEHIND the player
       // behind = opposite of forward
       // so we subtract forward from player position
-      const distance = 2    // how far behind
+      const distance = 1    // how far behind
       const height   = 1    // how high above
-  
-      // camera.position.x = player.position.x - forward.x * distance
-      // camera.position.y = player.position.y + height
-      // camera.position.z = player.position.z - forward.z * distance
-      // camera always looks AT the player head
-      // const lookTarget = new THREE.Vector3(
-      //   player.position.x,
-      //   player.position.y + 1,
-      //   player.position.z
-      // )
-      // camera.lookAt(lookTarget)
 
       // ── smooth follow with lerp ─────────────────────────────
       const targetX = player.position.x - forward.x * distance
@@ -119,7 +109,9 @@ function Game({ username }) {
         {/* camera follows the player mesh */}
         <FollowCamera playerRef={playerRef} />
 
-        <Floor />
+        {/* <Floor /> */}
+        <Model position={[0, -0.5, 0]} />
+
 
         {/* pass playerRef so Player can fill it with its mesh */}
         <Player sendState={sendState} playerRef={playerRef} />
