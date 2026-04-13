@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 
-const WS_BASE_URL =
-  import.meta.env.VITE_WEBSOCKET_URL ||
-  (window.location.hostname === "localhost"
-    ? "ws://localhost:8080"
-    : "wss://game-server-websocket.onrender.com")
 
 function useWebSocket(username) {
 
@@ -18,7 +13,8 @@ function useWebSocket(username) {
 //localhost:8080
 // https://game-server-websocket.onrender.com
   useEffect(() => {
-    const ws = new WebSocket(`${WS_BASE_URL}?username=${encodeURIComponent(username)}`)
+    // 1. Connect to server with username in URL
+    const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
     wsRef.current = ws
 
     // 2. When server sends data (all players' positions)
@@ -27,7 +23,8 @@ function useWebSocket(username) {
       try {
         const allUsers = JSON.parse(event.data)
 
-        const others = allUsers.filter((user) => user.username !== username)
+        // filter out ourselves
+        const others = allUsers.filter(user => user.username !== username)
         setOtherPlayers(others)
 
       } catch (e) {
@@ -49,6 +46,7 @@ function useWebSocket(username) {
       console.error("WebSocket error:", err)
     }
 
+    // Cleanup — close connection when component unmounts
     return () => {
       ws.close()
     }
@@ -61,12 +59,15 @@ function useWebSocket(username) {
   function sendState(x, z ,rotation) {
     const ws = wsRef.current
 
+    // Only send if connection is open (readyState 1 = OPEN)
     if (ws && ws.readyState === 1) {
-      ws.send(JSON.stringify({
-        x,
-        z,
-        rotation,
-      }))
+      ws.send(JSON.stringify(
+        { 
+          x, 
+          z,
+          rotation,
+        }
+      ))
     }
   }
 
