@@ -2,7 +2,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { PointerLockControls } from "@react-three/drei"
 import { useRef } from "react"
 import * as THREE from "three"
-
+import { Physics } from "@react-three/rapier"
 import useWebSocket from "../hooks/useWebSocket"
 import Player from "./Player"
 import OtherPlayer from "./OtherPlayer"
@@ -48,8 +48,8 @@ function FollowCamera({ playerRef }) {
       // camera goes BEHIND the player
       // behind = opposite of forward
       // so we subtract forward from player position
-      const distance = 1    // how far behind
-      const height   = 1    // how high above
+      const distance = 2    // how far behind
+      const height   = 1.5    // how high above
 
       // ── smooth follow with lerp ─────────────────────────────
       const targetX = player.position.x - forward.x * distance
@@ -79,7 +79,7 @@ function Game({ username }) {
       {/* click to lock mouse */}
       <div style={{
         position: "absolute",
-        top: "50%", left: "50%",
+        top: "10%", left: "50%",
         transform: "translate(-50%, -50%)",
         color: "white",
         fontFamily: "monospace",
@@ -96,8 +96,25 @@ function Game({ username }) {
       <Canvas camera={{ fov: 75 }}>
 
         {/* lights */}
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[5, 10, 5]} intensity={1} />
+        {/* <ambientLight intensity={0.8} /> */}
+        <directionalLight position={[5, 10, 5]} intensity={0.3} />
+
+        {/* dark purple halloween sky */}
+        <color attach="background" args={["#1a0a2e"]} />
+
+        
+        {/* fog so far objects fade into darkness */}
+        <fog attach="fog" args={["#1a0a2e", 10, 40]} />
+
+        {/* brighter ambient so the scene is visible */}
+        <ambientLight intensity={0.5} />
+
+          {/* moonlight from above */}
+        <directionalLight position={[5, 15, 5]} intensity={0.8} color="#c9d4ff" />
+
+          {/* orange spooky point light near ground */}
+        <pointLight position={[0, 2, 0]} color="#ff6600" intensity={1} distance={15} />
+ 
 
         {/* 
           PointerLockControls — click to lock mouse
@@ -108,22 +125,22 @@ function Game({ username }) {
 
         {/* camera follows the player mesh */}
         <FollowCamera playerRef={playerRef} />
+        <Physics>
+          {/* <Floor /> */}
+          <Model position={[0, -0.5, 0]} />
 
-        {/* <Floor /> */}
-        <Model position={[0, -0.5, 0]} />
 
+          {/* pass playerRef so Player can fill it with its mesh */}
+          <Player sendState={sendState} playerRef={playerRef} />
 
-        {/* pass playerRef so Player can fill it with its mesh */}
-        <Player sendState={sendState} playerRef={playerRef} />
-
-        {otherPlayers.map((player) => (
-          <OtherPlayer
-            key={player.username}
-            username={player.username}
-            state={player.state}
-          />
-        ))}
-
+          {otherPlayers.map((player) => (
+            <OtherPlayer
+              key={player.username}
+              username={player.username}
+              state={player.state}
+            />
+          ))}
+        </Physics>
       </Canvas>
     </div>
   )

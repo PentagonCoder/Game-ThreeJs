@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import { Text } from "@react-three/drei"
+import {GhostPlayer} from "../assets/GhostPlayer"
 
 function OtherPlayer({ username, state }) {
 
@@ -19,15 +20,18 @@ function OtherPlayer({ username, state }) {
     <group ref={groupRef} position={[state.x, 0, state.z]}>
 
       {/* orange cube = other player */}
-      <mesh>
+      {/* <mesh>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color={state.color || "orange"} />
-      </mesh>
+      </mesh> */}
+
+      {/* ghost model = other player */}
+      <GhostPlayer position={[0, 0.3, 0]} />
 
       {/* username above — position [0,1.2,0] is LOCAL to the group */}
       <Text
-        position={[0, 1.2, 0]}
-        fontSize={0.4}
+        position={[0, 1.4, 0]}
+        fontSize={0.3}
         color="white"
         anchorX="center"
         anchorY="middle"

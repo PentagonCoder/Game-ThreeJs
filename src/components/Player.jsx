@@ -1,14 +1,20 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState, } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import * as THREE from "three"
+import { GhostUser } from "../assets/GhostUser"
+import { RigidBody, CapsuleCollider } from "@react-three/rapier"
 
 function Player({ sendState, playerRef }) {
 
   const meshRef = useRef()
   const keys = useRef({})
+  const boneRef = useRef()
+  const isSwinging  = useRef(false)
+  const swingAngle  = useRef(0) 
+
   const lastSentTime = useRef(0)
   const lastSent = useRef({ x: 0, z: 0, rotation: 0 })
-
+  // const [hit, setHit] = useState(false)
   const { camera } = useThree()
 
   useEffect(() => {
@@ -20,6 +26,16 @@ function Player({ sendState, playerRef }) {
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup",   onKeyUp)
     }
+  }, [])
+
+  // add this useEffect for click detection
+  useEffect(() => {
+    const onClick = () => {
+      isSwinging.current = true
+      swingAngle.current = 0
+    }
+    window.addEventListener("click", onClick)
+    return () => window.removeEventListener("click", onClick)
   }, [])
 
   useFrame((state, delta) => {
@@ -61,6 +77,35 @@ function Player({ sendState, playerRef }) {
       mesh.position.z -= right.z * speed * delta
     }
 
+    if (mesh.position.x > 15) mesh.position.x = 15
+    if (mesh.position.x < -15) mesh.position.x = -15
+    if (mesh.position.z > 12) mesh.position.z = 12
+    if (mesh.position.z < -18) mesh.position.z = -18
+
+    // swing animation
+    if (isSwinging.current && boneRef.current) {
+
+      // increase angle over time
+      swingAngle.current += delta * 5
+
+      // convert 60 degrees to radians = 1.047
+      const maxAngle = THREE.MathUtils.degToRad(90)
+
+      // rotate forward then back using sin wave
+      // boneRef.current.rotation.y = Math.sin(swingAngle.current) * maxAngle
+      boneRef.current.rotation.x = Math.sin(swingAngle.current) * maxAngle
+      // boneRef.current.rotation.z = Math.sin(swingAngle.current) * maxAngle
+      // stop when full swing is done
+      if (swingAngle.current > Math.PI) {
+        isSwinging.current = false
+        swingAngle.current = 0
+        // boneRef.current.rotation.y = 0  // reset
+        boneRef.current.rotation.x = 0  // reset
+        // boneRef.current.rotation.z = 0  // reset
+      }
+    }
+
+
     // rotate cube mesh to match camera horizontal rotation
     mesh.rotation.y = Math.atan2(forward.x, forward.z)
 
@@ -82,10 +127,23 @@ function Player({ sendState, playerRef }) {
   })
 
   return (
-    <mesh ref={meshRef} name="player" position={[0, 0, 0]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="skyblue" />
-    </mesh>
+    // <mesh ref={meshRef} name="player" position={[0, 0, 0]}>
+    //   <boxGeometry args={[1, 1, 1]} />
+    //   <meshStandardMaterial color="skyblue" />
+    // </mesh>
+      <group ref={meshRef} name="player" position={[0, 0, 0]}>
+
+          <group ref={boneRef} position={[0, 0.2, 0]}>
+            <RigidBody type="kinematicPosition">  // kinematic = WE control movement, not physics
+              <CapsuleCollider args={[0.5, 0.3]} />  // [height, radius]
+              <GhostUser position={[0, 0, 0]} />
+              {/* your bone model here */}
+            </RigidBody>
+          </group>
+      </group>
+    
+  
+
   )
 }
 
