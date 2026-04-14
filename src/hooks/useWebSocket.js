@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8080"
+
 
 function useWebSocket(username, onDisconnect) {
 
@@ -17,7 +17,7 @@ function useWebSocket(username, onDisconnect) {
     isManualCloseRef.current = false
 
     // 1. Connect to server with username in URL
-    const ws = new WebSocket(`${WS_URL}?username=${encodeURIComponent(username)}`)
+    const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
     wsRef.current = ws
 
     // 2. When server sends data (all players' positions)
