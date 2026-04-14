@@ -52,12 +52,45 @@ function FollowCamera({ playerRef }) {
 // ─────────────────────────────────────────────
 // Main Game
 // ─────────────────────────────────────────────
-function Game({ username, onDisconnect }) {
-  const { sendState, otherPlayers, sendHit } = useWebSocket(username, onDisconnect)
+function Game({ username }) {
+  const { sendState, otherPlayers, sendHit, isDead } = useWebSocket(username)
 
   // shared ref — Player puts its mesh here, FollowCamera reads from it
   const playerRef = useRef()
 
+  if(isDead){
+    return(
+      <div style={{
+        width: "100vw", height: "100vh",
+        background: "#0a0010",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        fontFamily: "monospace"
+      }}>
+        <div style={{
+          fontSize: 72, color: "#ff2200",
+          textShadow: "0 0 40px #ff2200",
+          marginBottom: 24
+        }}>
+          💀 YOU DIED
+        </div>
+        <div style={{ color: "#888", fontSize: 18, marginBottom: 32 }}>
+          {username} was defeated
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: "12px 32px", fontSize: 18,
+            background: "#ff2200", color: "white",
+            border: "none", borderRadius: 8,
+            fontFamily: "monospace", cursor: "pointer"
+          }}
+        >
+          Play Again
+        </button>
+      </div>
+    )
+  }
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
 
@@ -116,7 +149,12 @@ function Game({ username, onDisconnect }) {
           {/* <EmptyObject position={[0, -0.5, 0]} /> */}
 
           {/* pass playerRef so Player can fill it with its mesh */}
-          <Player sendState={sendState} playerRef={playerRef} otherPlayers={otherPlayers} sendHit={sendHit} />
+          <Player 
+            sendState={sendState} 
+            playerRef={playerRef} 
+            otherPlayers={otherPlayers} 
+            sendHit={sendHit} 
+          />
 
           {otherPlayers.map((player) => (
             <OtherPlayer

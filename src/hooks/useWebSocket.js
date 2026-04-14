@@ -1,21 +1,20 @@
+import { Tube } from "@react-three/drei"
 import { useEffect, useRef, useState } from "react"
 
 
-function useWebSocket(username, onDisconnect) {
+function useWebSocket(username,) {
 
   // otherPlayers is an array like:
   // [ { username: "John", state: { x, z } }, { username: "Jane", state: { x, z } } ]
   const [otherPlayers, setOtherPlayers] = useState([])
-
+  const [isDead, setIsDead] = useState(false)
   // useRef to store the WebSocket instance, not in state because we don't want re-renders when it changes
   const wsRef = useRef(null)
-  const isManualCloseRef = useRef(false)
+  const hitCount = useRef({})
 
 //localhost:8080
 // https://game-server-websocket.onrender.com
   useEffect(() => {
-    isManualCloseRef.current = false
-
     // 1. Connect to server with username in URL
     const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
     wsRef.current = ws
@@ -24,13 +23,22 @@ function useWebSocket(username, onDisconnect) {
     ws.onmessage = (event) => {
       // ✅ try/catch so plain string messages don't crash the app
       try {
-        const allUsers = JSON.parse(event.data)
+        const data = JSON.parse(event.data)
 
-        if (!Array.isArray(allUsers)) return
+        
+        // server told us we died
+        if (data.type === "you_died") {
+          setIsDead(true)
+          return
+        }
 
-        // filter out ourselves
-        const others = allUsers.filter(user => user && user.username && user.username !== username)
-        setOtherPlayers(others)
+        // normal position broadcast — array
+        if (Array.isArray(data)){
+          // filter out ourselves
+          const others = data.filter(user => user.username !== username)
+          setOtherPlayers(others)
+        }
+
 
       } catch (e) {
         // server sent a plain string like "You are now connected!"
@@ -45,62 +53,39 @@ function useWebSocket(username, onDisconnect) {
 
     ws.onclose = (event) => {
       console.log("Disconnected from server")
-
-      if (isManualCloseRef.current) return
-
-      if (typeof onDisconnect === "function") {
-        onDisconnect({
-          code: event.code,
-          reason: event.reason,
-          message: event.code === 4001
-            ? (event.reason || "You were eliminated")
-            : "Connection lost. Please join again.",
-        })
-      }
     }
 
-    ws.onerror = (err) => {
-      console.error("WebSocket error:", err)
-    }
+    ws.onerror = (err) => console.error("WS error:", err)
+    return () => ws.close()
+  }, [username])
 
     // Cleanup — close connection when component unmounts
-    return () => {
-      isManualCloseRef.current = true
-      ws.close()
-    }
-
-  }, [username, onDisconnect])
 
 
   // This function is called by Player.jsx every frame
   // It sends our current position to the server
   function sendState(x, z ,rotation) {
     const ws = wsRef.current
-
     // Only send if connection is open (readyState 1 = OPEN)
     if (ws && ws.readyState === 1) {
-      ws.send(JSON.stringify(
-        { 
-          x, 
-          z,
-          rotation,
-        }
-      ))
+      ws.send(JSON.stringify({ x, z, rotation }))
     }
   }
 
-  function sendHit(target) {
-  const ws = wsRef.current
-
-  if (ws && ws.readyState === 1) {
-    ws.send(JSON.stringify({
-      type: "hit",
-      target
-    }))
+  // called when bone hits another player
+  function sendHit(targetUsername) {
+    // send EVERY hit to server — don't count locally
+    const ws = wsRef.current
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({
+        type: "hit",
+        target: targetUsername
+      }))
+      console.log(`Sent hit to ${targetUsername}`)
+    }
   }
-}
 
-  return { otherPlayers, sendState, sendHit }
+  return { otherPlayers, sendState, sendHit ,isDead}
 }
 
 export default useWebSocket

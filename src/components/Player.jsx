@@ -35,9 +35,10 @@ function isBlocked(x, z) {
   )
 }
 
+const ATTACK_RANGE = 2.5
+
 function Player({ sendState, playerRef, otherPlayers,sendHit }) {
-  const ATTACK_RANGE = 2.5
-  const hasHit = useRef(false)
+  const hitThisSwing = useRef(false)
   const meshRef = useRef()
   const keys = useRef({})
   const boneRef = useRef()
@@ -66,7 +67,7 @@ function Player({ sendState, playerRef, otherPlayers,sendHit }) {
     const onClick = () => {
       isSwinging.current = true
       swingAngle.current = 0
-      hasHit.current = false  // reset hit state on each swing
+      hitThisSwing.current = false  // reset hit state on each swing
     }
     window.addEventListener("click", onClick)
     return () => window.removeEventListener("click", onClick)
@@ -167,30 +168,31 @@ function Player({ sendState, playerRef, otherPlayers,sendHit }) {
       boneRef.current.rotation.x = Math.sin(swingAngle.current) * maxAngle
    
       // stop when full swing is done
+      if (swingAngle.current > 1.2 && !hitThisSwing.current) {
+        hitThisSwing.current = true  // don't check again this swing
+ 
+        const myPos = mesh.position
+ 
+        otherPlayers && otherPlayers.forEach((player) => {
+          if (!player.state) return
+ 
+          const dx = player.state.x - myPos.x
+          const dz = player.state.z - myPos.z
+          const distance = Math.sqrt(dx * dx + dz * dz)
+ 
+          if (distance < ATTACK_RANGE) {
+            console.log(`Hit ${player.username}! distance: ${distance.toFixed(2)}`)
+            sendHit(player.username)
+          }
+        })
+      }
+ 
+      // swing done
       if (swingAngle.current > Math.PI) {
         isSwinging.current = false
         swingAngle.current = 0
-        boneRef.current.rotation.x = 0  // reset
+        boneRef.current.rotation.x = 0
       }
-    }
-
-    if (isSwinging.current && !hasHit.current) {
-      hasHit.current = true
-
-      const myPos = mesh.position
-
-      otherPlayers.forEach((player) => {
-        const dx = player.state.x - myPos.x
-        const dz = player.state.z - myPos.z
-
-        const distance = Math.sqrt(dx * dx + dz * dz)
-
-        if (distance < ATTACK_RANGE) {
-          sendHit(player.username)
-
-          // 🔥 for now just log (next step = server)
-        }
-      })
     }
 
     // rotate cube mesh to match camera horizontal rotation

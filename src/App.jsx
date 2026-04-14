@@ -5,25 +5,18 @@ function App() {
 
   const [username, setUsername] = useState("")
   const [joined, setJoined] = useState(false)
-  const [disconnectMessage, setDisconnectMessage] = useState("")
+
 
   // when user clicks Join
   function handleJoin() {
     if (username.trim() === "") return  // don't allow empty username
-    setDisconnectMessage("")
     setJoined(true)
   }
 
   // if joined → show the game
   if (joined) {
     return (
-      <Game
-        username={username}
-        onDisconnect={({ message }) => {
-          setDisconnectMessage(message)
-          setJoined(false)
-        }}
-      />
+      <Game username={username} />
     )
   }
 
@@ -42,20 +35,6 @@ function App() {
     }}>
 
       <h2 style={{ color: "white", marginBottom: 8 }}>Enter your username</h2>
-
-      {disconnectMessage && (
-        <div style={{
-          background: "rgba(239, 68, 68, 0.18)",
-          border: "1px solid #ef4444",
-          color: "#fee2e2",
-          padding: "10px 14px",
-          borderRadius: 8,
-          maxWidth: 360,
-          textAlign: "center"
-        }}>
-          {disconnectMessage}
-        </div>
-      )}
 
       <input
         type="text"
