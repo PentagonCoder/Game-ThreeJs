@@ -2,12 +2,12 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { PointerLockControls } from "@react-three/drei"
 import { useRef } from "react"
 import * as THREE from "three"
-import { Physics } from "@react-three/rapier"
+
 import useWebSocket from "../hooks/useWebSocket"
 import Player from "./Player"
 import OtherPlayer from "./OtherPlayer"
 import {Model} from "./GHOST-compressed"
-import { EmptyObject } from "./Ghost-empty"
+// import { EmptyObject } from "./Ghost-empty"
 // import Floor from "./Floor"
 
 // ─────────────────────────────────────────────
@@ -126,10 +126,10 @@ function Game({ username }) {
 
         {/* camera follows the player mesh */}
         <FollowCamera playerRef={playerRef} />
-        <Physics>
+        
           {/* <Floor /> */}
           <Model position={[0, -0.5, 0]} />
-          <EmptyObject position={[0, -0.5, 0]} />
+          {/* <EmptyObject position={[0, -0.5, 0]} /> */}
 
           {/* pass playerRef so Player can fill it with its mesh */}
           <Player sendState={sendState} playerRef={playerRef} />
@@ -141,7 +141,6 @@ function Game({ username }) {
               state={player.state}
             />
           ))}
-        </Physics>
       </Canvas>
     </div>
   )
