@@ -3,7 +3,9 @@ import { useFrame, useThree } from "@react-three/fiber"
 import * as THREE from "three"
 import { GhostUser } from "../assets/GhostUser"
 
-
+// ── blocked zones from your Ghost-empty positions ──────────────
+// each zone = center x,z and half-size halfW, halfD
+// player cannot enter these areas
 const BLOCKED_ZONES = [
   { x: 0,        z: -10.5,   halfW: 3.0,  halfD: 3.5  }, // crypt
   { x: -8.074,   z: -13.078, halfW: 1.0,  halfD: 1.0  }, // tree
@@ -19,6 +21,8 @@ const BLOCKED_ZONES = [
   { x: 5.768,    z: 3.996,   halfW: 4.0,  halfD: 0.3  }, // fence
   { x: -9.949,   z: -2.145,  halfW: 0.3,  halfD: 6.0  }, // side fence
 ]
+
+
 
 // returns true if position x,z is inside any blocked zone
 function isBlocked(x, z) {
@@ -47,6 +51,7 @@ function Player({ sendState, playerRef }) {
   useEffect(() => {
     const onKeyDown = (e) => { keys.current[e.key] = true }
     const onKeyUp   = (e) => { keys.current[e.key] = false }
+  
     window.addEventListener("keydown", onKeyDown)
     window.addEventListener("keyup",   onKeyUp)
     return () => {
@@ -67,6 +72,7 @@ function Player({ sendState, playerRef }) {
 
   useFrame((state, delta) => {
     const mesh = meshRef.current
+    
     const speed = 4
 
     // share mesh with FollowCamera via playerRef
@@ -86,24 +92,25 @@ function Player({ sendState, playerRef }) {
     const right = new THREE.Vector3()
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize()
 
-    // ── movement relative to camera direction ─────────────────
-    // if (keys.current["w"] || keys.current["ArrowUp"]) {
-    //   mesh.position.x += forward.x * speed * delta
-    //   mesh.position.z += forward.z * speed * delta
-    // }
-    // if (keys.current["s"] || keys.current["ArrowDown"]) {
-    //   mesh.position.x -= forward.x * speed * delta
-    //   mesh.position.z -= forward.z * speed * delta
-    // }
-    // if (keys.current["d"] || keys.current["ArrowRight"]) {
-    //   mesh.position.x += right.x * speed * delta
-    //   mesh.position.z += right.z * speed * delta
-    // }
-    // if (keys.current["a"] || keys.current["ArrowLeft"]) {
-    //   mesh.position.x -= right.x * speed * delta
-    //   mesh.position.z -= right.z * speed * delta
-    // }
+   
     
+//  // ── movement relative to camera direction ─────────────────
+//     if (keys.current["w"] || keys.current["ArrowUp"]) {
+//       mesh.position.x += forward.x * speed * delta
+//       mesh.position.z += forward.z * speed * delta
+//     }
+//     if (keys.current["s"] || keys.current["ArrowDown"]) {
+//       mesh.position.x -= forward.x * speed * delta
+//       mesh.position.z -= forward.z * speed * delta
+//     }
+//     if (keys.current["d"] || keys.current["ArrowRight"]) {
+//       mesh.position.x += right.x * speed * delta
+//       mesh.position.z += right.z * speed * delta
+//     }
+//     if (keys.current["a"] || keys.current["ArrowLeft"]) {
+//       mesh.position.x -= right.x * speed * delta
+//       mesh.position.z -= right.z * speed * delta
+//     }
     // ── calculate where player WANTS to go ───────────────────
     let newX = mesh.position.x
     let newZ = mesh.position.z
@@ -139,6 +146,7 @@ function Player({ sendState, playerRef }) {
     }
     // fully blocked — don't move at all
 
+    // ── boundary ──────────────────────────────────────────────
     if (mesh.position.x > 15) mesh.position.x = 15
     if (mesh.position.x < -15) mesh.position.x = -15
     if (mesh.position.z > 12) mesh.position.z = 12
@@ -154,16 +162,13 @@ function Player({ sendState, playerRef }) {
       const maxAngle = THREE.MathUtils.degToRad(90)
 
       // rotate forward then back using sin wave
-      // boneRef.current.rotation.y = Math.sin(swingAngle.current) * maxAngle
       boneRef.current.rotation.x = Math.sin(swingAngle.current) * maxAngle
-      // boneRef.current.rotation.z = Math.sin(swingAngle.current) * maxAngle
+   
       // stop when full swing is done
       if (swingAngle.current > Math.PI) {
         isSwinging.current = false
         swingAngle.current = 0
-        // boneRef.current.rotation.y = 0  // reset
         boneRef.current.rotation.x = 0  // reset
-        // boneRef.current.rotation.z = 0  // reset
       }
     }
 
@@ -189,18 +194,10 @@ function Player({ sendState, playerRef }) {
   })
 
   return (
-    // <mesh ref={meshRef} name="player" position={[0, 0, 0]}>
-    //   <boxGeometry args={[1, 1, 1]} />
-    //   <meshStandardMaterial color="skyblue" />
-    // </mesh>
-      <group ref={meshRef} name="player" position={[0, 0, 0]}>
 
+      <group ref={meshRef} name="player" position={[0, 0, 0]}>
           <group ref={boneRef} position={[0, 0.2, 0]}>
-            {/* <RigidBody type="kinematicPosition">   */}
-              {/* <CapsuleCollider args={[0.5, 0.3]} />  */}
               <GhostUser position={[0, 0, 0]} />
-              {/* your bone model here */}
-            {/* </RigidBody> */}
           </group>
       </group>
     

@@ -16,22 +16,6 @@ import {Model} from "./GHOST-compressed"
 // we just move camera position every frame
 // ─────────────────────────────────────────────
 
-// function FollowCamera({ playerRef }) {
-//   const { camera } = useThree()
-
-//   useFrame(() => {
-//     if (!playerRef.current) return
-
-//     const player = playerRef.current
-
-//     // place camera AT the player position + a little above (eye level)
-//     camera.position.x = player.position.x
-//     camera.position.y = player.position.y + 1.6  // eye height
-//     camera.position.z = player.position.z + 2.1 // slight offset to prevent z-fighting with floor
-//   })
-
-//   return null
-// }
 
 function FollowCamera({ playerRef }) {
   const { camera } = useThree()
