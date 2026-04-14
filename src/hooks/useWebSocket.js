@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
+const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8080"
 
-
-function useWebSocket(username) {
+function useWebSocket(username, onDisconnect) {
 
   // otherPlayers is an array like:
   // [ { username: "John", state: { x, z } }, { username: "Jane", state: { x, z } } ]
@@ -9,12 +9,15 @@ function useWebSocket(username) {
 
   // useRef to store the WebSocket instance, not in state because we don't want re-renders when it changes
   const wsRef = useRef(null)
+  const isManualCloseRef = useRef(false)
 
 //localhost:8080
 // https://game-server-websocket.onrender.com
   useEffect(() => {
+    isManualCloseRef.current = false
+
     // 1. Connect to server with username in URL
-    const ws = new WebSocket(`wss://game-server-websocket.onrender.com?username=${username}`)
+    const ws = new WebSocket(`${WS_URL}?username=${encodeURIComponent(username)}`)
     wsRef.current = ws
 
     // 2. When server sends data (all players' positions)
@@ -23,8 +26,10 @@ function useWebSocket(username) {
       try {
         const allUsers = JSON.parse(event.data)
 
+        if (!Array.isArray(allUsers)) return
+
         // filter out ourselves
-        const others = allUsers.filter(user => user.username !== username)
+        const others = allUsers.filter(user => user && user.username && user.username !== username)
         setOtherPlayers(others)
 
       } catch (e) {
@@ -38,8 +43,20 @@ function useWebSocket(username) {
       console.log("Connected to server!")
     }
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
       console.log("Disconnected from server")
+
+      if (isManualCloseRef.current) return
+
+      if (typeof onDisconnect === "function") {
+        onDisconnect({
+          code: event.code,
+          reason: event.reason,
+          message: event.code === 4001
+            ? (event.reason || "You were eliminated")
+            : "Connection lost. Please join again.",
+        })
+      }
     }
 
     ws.onerror = (err) => {
@@ -48,10 +65,11 @@ function useWebSocket(username) {
 
     // Cleanup — close connection when component unmounts
     return () => {
+      isManualCloseRef.current = true
       ws.close()
     }
 
-  }, [username])
+  }, [username, onDisconnect])
 
 
   // This function is called by Player.jsx every frame
@@ -71,7 +89,18 @@ function useWebSocket(username) {
     }
   }
 
-  return { otherPlayers, sendState }
+  function sendHit(target) {
+  const ws = wsRef.current
+
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({
+      type: "hit",
+      target
+    }))
+  }
+}
+
+  return { otherPlayers, sendState, sendHit }
 }
 
 export default useWebSocket

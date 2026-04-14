@@ -52,8 +52,8 @@ function FollowCamera({ playerRef }) {
 // ─────────────────────────────────────────────
 // Main Game
 // ─────────────────────────────────────────────
-function Game({ username }) {
-  const { sendState, otherPlayers } = useWebSocket(username)
+function Game({ username, onDisconnect }) {
+  const { sendState, otherPlayers, sendHit } = useWebSocket(username, onDisconnect)
 
   // shared ref — Player puts its mesh here, FollowCamera reads from it
   const playerRef = useRef()
@@ -116,7 +116,7 @@ function Game({ username }) {
           {/* <EmptyObject position={[0, -0.5, 0]} /> */}
 
           {/* pass playerRef so Player can fill it with its mesh */}
-          <Player sendState={sendState} playerRef={playerRef} />
+          <Player sendState={sendState} playerRef={playerRef} otherPlayers={otherPlayers} sendHit={sendHit} />
 
           {otherPlayers.map((player) => (
             <OtherPlayer

@@ -35,8 +35,9 @@ function isBlocked(x, z) {
   )
 }
 
-function Player({ sendState, playerRef }) {
-
+function Player({ sendState, playerRef, otherPlayers,sendHit }) {
+  const ATTACK_RANGE = 2.5
+  const hasHit = useRef(false)
   const meshRef = useRef()
   const keys = useRef({})
   const boneRef = useRef()
@@ -65,6 +66,7 @@ function Player({ sendState, playerRef }) {
     const onClick = () => {
       isSwinging.current = true
       swingAngle.current = 0
+      hasHit.current = false  // reset hit state on each swing
     }
     window.addEventListener("click", onClick)
     return () => window.removeEventListener("click", onClick)
@@ -172,6 +174,24 @@ function Player({ sendState, playerRef }) {
       }
     }
 
+    if (isSwinging.current && !hasHit.current) {
+      hasHit.current = true
+
+      const myPos = mesh.position
+
+      otherPlayers.forEach((player) => {
+        const dx = player.state.x - myPos.x
+        const dz = player.state.z - myPos.z
+
+        const distance = Math.sqrt(dx * dx + dz * dz)
+
+        if (distance < ATTACK_RANGE) {
+          sendHit(player.username)
+
+          // 🔥 for now just log (next step = server)
+        }
+      })
+    }
 
     // rotate cube mesh to match camera horizontal rotation
     mesh.rotation.y = Math.atan2(forward.x, forward.z)
